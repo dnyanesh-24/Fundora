@@ -25,6 +25,9 @@
             <span>👤 <strong><c:out value="${currentUser.name}"/></strong> (<c:out value="${currentUser.role}"/>)</span>
             <span style="color: var(--accent); font-weight: bold;">Wallet: ₹<fmt:formatNumber value="${currentUser.walletBalance}" type="number" minFractionDigits="2"/></span>
             <span style="font-size: 0.8rem; color: var(--text-muted);"><c:out value="${currentUser.upiId}"/></span>
+            <a href="${pageContext.request.contextPath}/logout" class="btn btn-nudge" style="padding: 0.25rem 0.65rem; font-size: 0.8rem; text-decoration: none;">
+                🚪 Logout
+            </a>
         </div>
     </header>
 

@@ -16,9 +16,14 @@
             <span>✨ Fundora</span>
             <span class="brand-badge">Audit Ledger</span>
         </a>
-        <a href="${pageContext.request.contextPath}/dashboard?groupId=${selectedGroupId}" class="btn btn-primary">
-            ⬅️ Back to Dashboard
-        </a>
+        <div style="display: flex; gap: 0.75rem;">
+            <a href="${pageContext.request.contextPath}/dashboard?groupId=${selectedGroupId}" class="btn btn-primary">
+                ⬅️ Back to Dashboard
+            </a>
+            <a href="${pageContext.request.contextPath}/logout" class="btn btn-nudge" style="text-decoration: none;">
+                🚪 Logout
+            </a>
+        </div>
     </header>
 
     <div class="container">

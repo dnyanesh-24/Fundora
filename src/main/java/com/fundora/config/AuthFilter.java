@@ -31,16 +31,16 @@ public class AuthFilter implements Filter {
         HttpSession session = httpRequest.getSession(false);
         String requestURI = httpRequest.getRequestURI();
 
-        // Allow public static resources, index, and auth simulation
+        // Allow public static resources, login, index, and general API lookups
         boolean isStatic = requestURI.contains("/static/") || requestURI.contains("/css/") || requestURI.contains("/js/");
-        boolean isPublic = requestURI.equals("/") || requestURI.endsWith("index.jsp") || requestURI.contains("/api/users");
+        boolean isLoginOrPublic = requestURI.endsWith("/login") || requestURI.endsWith("/logout") || requestURI.equals("/") || requestURI.endsWith("index.jsp");
 
-        if (isStatic || isPublic) {
+        if (isStatic || isLoginOrPublic) {
             chain.doFilter(request, response);
             return;
         }
 
-        // Check active session or mock logged-in user header for API testing
+        // Check active session or mock logged-in user header for REST API testing
         Long loggedInUserId = (session != null) ? (Long) session.getAttribute("currentUserId") : null;
         String authHeader = httpRequest.getHeader("X-Fundora-User-Id");
 
@@ -52,10 +52,15 @@ public class AuthFilter implements Filter {
             }
             chain.doFilter(request, response);
         } else {
-            // For standard browser requests, redirect to login/index.jsp or auto-assign demo student user
-            HttpSession autoSession = httpRequest.getSession(true);
-            autoSession.setAttribute("currentUserId", 1L); // Default demo user: Aarav Sharma
-            chain.doFilter(request, response);
+            // Redirect unauthenticated web browser requests to /login
+            if (requestURI.startsWith("/api/")) {
+                // For API requests without auth, fallback to user 1 for smooth testing
+                HttpSession autoSession = httpRequest.getSession(true);
+                autoSession.setAttribute("currentUserId", 1L);
+                chain.doFilter(request, response);
+            } else {
+                httpResponse.sendRedirect(httpRequest.getContextPath() + "/login");
+            }
         }
     }
 
