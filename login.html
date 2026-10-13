@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fundora - Sign In / Persona Switcher</title>
+    <link rel="stylesheet" href="static/css/styles.css">
+    <style>
+        .login-container { max-width: 900px; margin: 3rem auto; padding: 0 1.5rem; }
+        .login-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+        @media (max-width: 768px) { .login-grid { grid-template-columns: 1fr; } }
+        .persona-card {
+            background: var(--bg-card-alt); border: 1px solid var(--border-color); border-radius: 10px;
+            padding: 1rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between;
+            align-items: center; cursor: pointer; transition: all 0.2s;
+        }
+        .persona-card:hover { border-color: var(--primary); transform: translateX(4px); background: rgba(79, 70, 229, 0.15); }
+        .persona-name { font-weight: 600; color: #fff; display: block; }
+        .persona-meta { font-size: 0.8rem; color: var(--text-muted); }
+        .role-badge { background: var(--primary); color: #fff; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; }
+        .role-badge.manager { background: #f59e0b; }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <a href="login.html" class="brand">
+            <span>✨ Fundora</span>
+            <span class="brand-badge">Authentication</span>
+        </a>
+    </header>
+
+    <div class="login-container">
+        <div class="login-grid">
+            
+            <!-- Left Panel: 1-Click Persona Quick Switcher -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">⚡ 1-Click Demo Profiles</h2>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Quick Sign-In</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;">
+                    Select any student flatmate persona to instantly test peer debt splits:
+                </p>
+
+                <div class="persona-card" onclick="selectPersona(1)">
+                    <div>
+                        <span class="persona-name">👤 Dnyaneshwar Sangale</span>
+                        <span class="persona-meta">UPI: dnyaneshwar@okhdfcbank | Wallet: ₹2,500.00</span>
+                    </div>
+                    <div><span class="role-badge">STUDENT</span></div>
+                </div>
+
+                <div class="persona-card" onclick="selectPersona(2)">
+                    <div>
+                        <span class="persona-name">👤 Tejasvee Patil</span>
+                        <span class="persona-meta">UPI: tejasvee@icici | Wallet: ₹1,800.00</span>
+                    </div>
+                    <div><span class="role-badge">STUDENT</span></div>
+                </div>
+
+                <div class="persona-card" onclick="selectPersona(3)">
+                    <div>
+                        <span class="persona-name">👤 Bharati Sharma</span>
+                        <span class="persona-meta">UPI: bharati@paytm | Wallet: ₹3,200.00</span>
+                    </div>
+                    <div><span class="role-badge">STUDENT</span></div>
+                </div>
+
+                <div class="persona-card" onclick="selectPersona(4)">
+                    <div>
+                        <span class="persona-name">👤 Atharva Sawant</span>
+                        <span class="persona-meta">UPI: atharva@axisbank | Wallet: ₹1,200.00</span>
+                    </div>
+                    <div><span class="role-badge">STUDENT</span></div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Standard Credentials Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🔐 Sign In with ID / Phone</h2>
+                </div>
+                <form onsubmit="handleFormLogin(event)">
+                    <div id="loginError" class="alert-box alert-danger" style="display: none;" role="alert"></div>
+                    <div class="form-group">
+                        <label class="form-label">Email Address or Registered Phone</label>
+                        <input type="text" id="emailInput" class="form-control" placeholder="e.g. dnyaneshwar@fundora.app" value="dnyaneshwar@fundora.app" required/>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">UPI App Passcode / PIN</label>
+                        <input type="password" class="form-control" placeholder="••••" value="1234"/>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">Default demo passcode: 1234</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; padding: 0.75rem;">
+                        Sign In to Fundora
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="static/js/demo-data.js"></script>
+    <script>
+        function selectPersona(userId) {
+            FundoraDemo.signIn(userId);
+            window.location.href = 'dashboard.html';
+        }
+        function handleFormLogin(e) {
+            e.preventDefault();
+            const user = FundoraDemo.findUserByLogin(document.getElementById('emailInput').value);
+            if (!user) {
+                const box = document.getElementById('loginError');
+                box.textContent = '⚠️ User not found. Use a demo email (e.g. tejasvee@fundora.app) or phone (e.g. 9820223344).';
+                box.style.display = 'block';
+                return;
+            }
+            selectPersona(user.id);
+        }
+    </script>
+</body>
+</html>

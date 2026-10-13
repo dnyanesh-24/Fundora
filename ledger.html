@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fundora - Detailed Group Ledger</title>
+    <link rel="stylesheet" href="static/css/styles.css">
+    <script src="static/js/demo-data.js"></script>
+</head>
+<body>
+
+    <header class="navbar">
+        <a href="dashboard.html" class="brand">
+            <span>✨ Fundora</span>
+            <span class="brand-badge">Audit Ledger</span>
+        </a>
+        <div style="display: flex; gap: 0.75rem;">
+            <a id="backLink" href="dashboard.html" class="btn btn-primary">
+                ⬅️ Back to Dashboard
+            </a>
+            <a href="login.html" class="btn btn-nudge" style="text-decoration: none;">
+                🚪 Switch Profile
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card" id="ledgerCard">
+            <div class="card-header">
+                <div>
+                    <h1 class="card-title" style="font-size: 1.5rem;" id="groupName"></h1>
+                    <p style="color: var(--text-muted);" id="groupDesc"></p>
+                </div>
+                <span class="brand-badge" id="groupType"></span>
+            </div>
+
+            <!-- Net balances summary breakdown -->
+            <h3 style="margin-bottom: 1rem; color: #fff;">👥 Individual Net Balance Breakdown</h3>
+            <table class="data-table" style="margin-bottom: 2rem;">
+                <thead>
+                    <tr>
+                        <th>Member Name</th>
+                        <th>Email / UPI</th>
+                        <th>Net Balance Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="balancesBody"></tbody>
+            </table>
+
+            <!-- Itemized Expenses with Split Breakdowns -->
+            <h3 style="margin-bottom: 1rem; color: #fff;">🧾 Itemized Expense & Split Allocation Audit</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Title</th>
+                        <th>Paid By</th>
+                        <th>Amount</th>
+                        <th>Splits Breakdown</th>
+                    </tr>
+                </thead>
+                <tbody id="expensesBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        (function renderLedger() {
+            const esc = FundoraDemo.escapeHTML;
+            const inr = FundoraDemo.formatINR;
+            const me = FundoraDemo.currentUser();
+            const groups = FundoraDemo.groupsFor(me.id);
+            const requested = new URLSearchParams(window.location.search).get('groupId');
+            const groupId = groups.some(g => g.id === requested) ? requested : groups[0].id;
+            const L = FundoraDemo.ledger(groupId);
+
+            document.getElementById('backLink').href = `dashboard.html?groupId=${encodeURIComponent(groupId)}`;
+            document.getElementById('groupName').textContent = L.group.name;
+            document.getElementById('groupDesc').textContent = L.group.description;
+            document.getElementById('groupType').textContent = L.group.groupType;
+
+            document.getElementById('balancesBody').innerHTML = L.group.members.map(id => {
+                const u = FundoraDemo.user(id);
+                const bal = L.balances[id] || 0;
+                const owes = bal < 0;
+                return `
+                <tr>
+                    <td><strong>${esc(u.name)}</strong></td>
+                    <td>${esc(u.upi)}</td>
+                    <td style="font-weight: bold; color: ${owes ? 'var(--danger)' : 'var(--accent)'};">
+                        ${owes ? '-' : '+'}₹${inr(Math.abs(bal))}
+                        <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">(${owes ? 'owes' : 'gets back'})</span>
+                    </td>
+                    <td>${owes
+                        ? '<span style="color: var(--warning); font-size: 0.85rem;">Pending Settlement</span>'
+                        : '<span style="color: var(--accent); font-size: 0.85rem;">Clear</span>'}</td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById('expensesBody').innerHTML = L.expenses.length === 0
+                ? '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No expenses recorded yet in this group.</td></tr>'
+                : L.expenses.map(e => `
+                <tr>
+                    <td>${esc(e.date)}</td>
+                    <td><strong>${esc(e.title)}</strong></td>
+                    <td>${esc(FundoraDemo.user(e.paidBy).name)}</td>
+                    <td style="color: var(--secondary); font-weight: bold;">₹${inr(e.amount)}</td>
+                    <td>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                            ${Object.entries(e.splits).map(([uid, share]) => `
+                                <span style="background: var(--bg-card-alt); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
+                                    ${esc(FundoraDemo.user(uid).name.split(' ')[0])}: ₹${inr(share)}
+                                </span>`).join('')}
+                        </div>
+                    </td>
+                </tr>`).join('');
+        })();
+    </script>
+
+</body>
+</html>
